@@ -59,12 +59,20 @@ class BoardStore {
       this.gameStatus = "You lose";
       this.board.forEach((row) => {
         row.forEach((tile) => {
-          if (tile.isMine) tile.status = TILE_STATUS.SHOW;
+          if (tile.isMine && tile.status === TILE_STATUS.HIDDEN)
+            tile.status = TILE_STATUS.SHOW;
         });
       });
     } else {
       if (this.checkWin()) {
         this.gameStatus = "You win";
+        this.board.forEach((data) => {
+          data.forEach((data) => {
+            if (data.isMine === true) {
+              data.status = TILE_STATUS.MARKED;
+            }
+          });
+        });
       }
     }
   };
@@ -74,7 +82,8 @@ class BoardStore {
       row.every(
         (tile) =>
           tile.status === TILE_STATUS.SHOW ||
-          (tile.isMine && tile.status === TILE_STATUS.MARKED),
+          (tile.isMine && tile.status === TILE_STATUS.MARKED) ||
+          (tile.isMine && tile.status === TILE_STATUS.HIDDEN),
       ),
     );
   };
@@ -114,6 +123,7 @@ class BoardStore {
     }
     return tileList;
   };
+
   positionMatch = (a: IPosition, b: IPosition) => a.x === b.x && a.y === b.y;
   generateRandomNumber = (range: number) => Math.floor(Math.random() * range);
 }

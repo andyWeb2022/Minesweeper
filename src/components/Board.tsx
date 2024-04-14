@@ -8,36 +8,33 @@ import { TILE_STATUS } from "./type";
 const Board = () => {
   const {
     board,
+    gameStatus,
+    mineList,
     setUp,
     setMinePositions,
-    mineList,
     onClick,
-    gameStatus,
     checkWin,
+    getNearByTiles,
   } = BoardStore;
-  const NUMBER_OF_MINES = 10;
-  const BOARD_SIZE = 20;
+  const NUMBER_OF_MINES = 40;
+  const BOARD_SIZE = 16;
   const [time, setTime] = useState(0);
-
   const intervalRef = useRef<NodeJS.Timer>();
   useEffect(() => {
     setUp({ size: BOARD_SIZE, numberOfMines: NUMBER_OF_MINES });
   }, [setUp, setMinePositions]);
   useEffect(() => {
-    const id = setInterval(() => {
+    intervalRef.current = setInterval(() => {
       setTime((time) => time + 1);
     }, 1000);
-    intervalRef.current = id;
     return () => {
       clearInterval(intervalRef.current);
     };
   }, []);
-
   return (
     <div className="text-center">
-      <h1>{gameStatus}</h1>
       <h1>
-        Mine Left:{" "}
+        Mine Left:
         {NUMBER_OF_MINES -
           (board.reduce(
             (acc, cur) =>
@@ -47,9 +44,10 @@ const Board = () => {
           ),
           0)}
       </h1>
+      <h1>Time:{time}</h1>
       <button
         onClick={() => {
-          console.log("reset");
+          console.log(123);
         }}
       >
         Reset
@@ -77,9 +75,32 @@ const Board = () => {
                     {
                       "bg-yellow-500": tile.status === TILE_STATUS.MARKED,
                     },
+                    {
+                      "bg-violet-500":
+                        tile.isMine &&
+                        gameStatus === "You lose" &&
+                        tile.status === TILE_STATUS.MARKED,
+                    },
                   )}
                   onDoubleClick={() => {
-                    console.log("hi");
+                    if (tile.status === TILE_STATUS.SHOW) {
+                      const tileList = getNearByTiles(tile);
+                      let number = 0;
+                      tileList.forEach((data) => {
+                        if (data.status === TILE_STATUS.MARKED) {
+                          number++;
+                        }
+                      });
+                      tileList.forEach((data) => {
+                        if (
+                          data.status !== TILE_STATUS.MARKED &&
+                          tile.text === `${number}`
+                        ) {
+                          onClick(data);
+                          data.status = TILE_STATUS.SHOW;
+                        }
+                      });
+                    }
                   }}
                   onContextMenu={(e) => {
                     e.preventDefault();
